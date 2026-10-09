@@ -1,0 +1,607 @@
+/* SAP Business One look for the Purchase Order screen */
+
+:root {
+  --menu: #2c4d6c;
+  --menu-hover: #3f6289;
+  --yellow: #ffedbe;
+  --grey: #e7ecf0;
+  --tab: #e5ecf2;
+  --line: #cbccd0;
+  --border: #aeb9c4;
+  --btn: #284e75;
+  --btn-hover: #1f3f60;
+  --accent: #e59c00;
+  --text: #1d282e;
+  --muted: #7d8b98;
+  --ok: #1b6e3c;
+  --error: #b3261e;
+  --warning: #8a5a00;
+
+  font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+  font-size: 12px;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #fff;
+}
+
+/* ---- shell: menu bar, window title, scrolling form, status bar ---- */
+
+.sap-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sap-shell.busy {
+  cursor: progress;
+}
+
+.menubar {
+  display: flex;
+  min-height: 32px;
+  padding: 0 8px;
+  background: var(--menu);
+}
+
+.menu {
+  position: relative;
+  display: flex;
+}
+
+.menu-btn {
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu-btn:disabled {
+  color: #fff;
+  cursor: default;
+}
+
+.menu-btn:hover:not(:disabled),
+.menu-btn.open {
+  background: var(--menu-hover);
+}
+
+.menu-drop {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  min-width: 140px;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.menu-drop button {
+  display: block;
+  width: 100%;
+  padding: 5px 14px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-drop button:hover {
+  background: var(--yellow);
+}
+
+.window-title {
+  padding: 4px 10px;
+  background: var(--menu);
+  border-top: 1px solid #45607e;
+  color: #fff;
+}
+
+.po-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 12px 12px;
+}
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 26px;
+  padding: 3px 12px;
+  background: #e7ecf2;
+  border-top: 1px solid var(--border);
+}
+
+.status-msg.error {
+  color: var(--error);
+}
+
+.status-msg.success {
+  color: var(--ok);
+}
+
+.status-msg.warning {
+  color: var(--warning);
+}
+
+/* ---- form fields ---- */
+
+.fld {
+  width: 100%;
+  min-width: 0;
+  height: 20px;
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+}
+
+textarea.fld {
+  height: 66px;
+  padding: 3px 4px;
+  resize: vertical;
+}
+
+.fld:focus {
+  outline: 2px solid var(--menu-hover);
+  outline-offset: -1px;
+}
+
+.fld[readonly],
+.fld:disabled {
+  background: var(--grey);
+  color: var(--text);
+  opacity: 1;
+}
+
+/* find mode: every field you can search on is yellow */
+.mode-find .fld:not([readonly]):not(:disabled),
+/* add mode: mandatory fields are yellow */
+.mode-add .fld.req {
+  background: var(--yellow);
+}
+
+/* ---- header ---- */
+
+.po-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 48px;
+}
+
+.hdr-col {
+  display: grid;
+  grid-template-columns: 143px 178px;
+  align-content: start;
+  align-items: center;
+  row-gap: 1px;
+}
+
+.hdr-right {
+  grid-template-columns: 143px 165px;
+}
+
+.hdr-right .fld {
+  width: 165px;
+}
+
+.hdr-col .currency {
+  grid-column: 1;
+  width: 141px;
+}
+
+.hdr-spacer {
+  grid-column: 1 / -1;
+  height: 30px;
+}
+
+/* wider than its 165px column on purpose: it grows to the left, like in SAP */
+.no-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  justify-self: end;
+  width: 260px;
+}
+
+.hdr-right .no-row .fld {
+  width: 96px;
+}
+
+.hdr-right .no-row .fld:last-child {
+  width: 53px;
+}
+
+/* ---- tabs and item grid ---- */
+
+.po-tabs {
+  margin-top: 16px;
+}
+
+.tab-buttons {
+  display: flex;
+}
+
+.tab-buttons button {
+  min-width: 112px;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  background: var(--tab);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab-buttons button + button {
+  margin-left: -1px;
+}
+
+.tab-buttons button[aria-selected='true'] {
+  position: relative;
+  top: 1px;
+  z-index: 1;
+  padding-bottom: 5px;
+  background: #fff;
+}
+
+.tab-panel {
+  min-height: 260px;
+  padding: 8px 10px 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.panel-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.inline-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inline-field .fld {
+  width: 112px;
+}
+
+.placeholder {
+  margin: 8px 0;
+  color: var(--muted);
+}
+
+.grid-wrap {
+  overflow-x: auto;
+}
+
+.po-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.po-grid th {
+  height: 20px;
+  padding: 2px 4px;
+  overflow: hidden;
+  background: #e5e5e5;
+  border: 1px solid var(--line);
+  font-weight: normal;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.po-grid td {
+  height: 19px;
+  padding: 0;
+  background: var(--grey);
+  border: 1px solid var(--line);
+}
+
+.po-grid td.on {
+  background: #fff;
+}
+
+.po-grid td.idx {
+  padding: 0 4px;
+  color: var(--muted);
+}
+
+.cell {
+  display: block;
+  width: 100%;
+  height: 18px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.cell.num {
+  text-align: right;
+}
+
+.cell:focus {
+  outline: 2px solid var(--menu-hover);
+  outline-offset: -2px;
+}
+
+/* ---- footer ---- */
+
+.po-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 48px;
+  margin-top: 8px;
+}
+
+.ft-left {
+  display: grid;
+  grid-template-columns: 146px 173px;
+  align-content: start;
+  align-items: start;
+  row-gap: 3px;
+}
+
+.ft-left label {
+  padding-top: 3px;
+}
+
+.ft-right {
+  display: grid;
+  align-content: start;
+  width: 316px;
+  row-gap: 1px;
+}
+
+.sum-row {
+  display: flex;
+  align-items: center;
+  min-height: 19px;
+}
+
+.sum-row > label {
+  flex: 1;
+}
+
+.sum-row .fld {
+  width: 165px;
+  text-align: right;
+}
+
+.sum-row .fld.pct {
+  width: 44px;
+}
+
+.pct-sign {
+  width: 18px;
+  padding-left: 3px;
+}
+
+/* ---- buttons ---- */
+
+.po-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 48px;
+  margin-top: 22px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  min-width: 98px;
+  height: 24px;
+  padding: 0 12px;
+  border: 0;
+  background: var(--btn);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--btn-hover);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* the default button of the window carries an orange marker on its left edge */
+.btn.primary {
+  border-left: 4px solid var(--accent);
+  padding-left: 8px;
+}
+
+.btn:disabled {
+  background: #e4e9ed;
+  color: var(--muted);
+  cursor: default;
+}
+
+/* ---- login and boot ---- */
+
+.login-screen,
+.boot {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  background: var(--grey);
+}
+
+.login-card {
+  width: 340px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.login-card h1 {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--menu);
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.login-body {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.login-body label {
+  display: grid;
+  gap: 2px;
+}
+
+.login-body .fld {
+  height: 24px;
+}
+
+.login-body .btn {
+  justify-self: end;
+}
+
+.login-error {
+  margin: 0;
+  color: var(--error);
+}
+
+.login-note {
+  margin: 0;
+  padding: 6px 8px;
+  background: var(--yellow);
+  border: 1px solid var(--accent);
+}
+
+.demo-tag {
+  margin-right: 8px;
+  padding: 1px 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: normal;
+}
+
+/* ---- find results modal ---- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(29, 40, 46, 0.45);
+}
+
+.modal-card {
+  display: flex;
+  flex-direction: column;
+  width: min(720px, 92vw);
+  max-height: 80vh;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--menu);
+  color: #fff;
+}
+
+.modal-close {
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.modal-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.modal-table th {
+  position: sticky;
+  top: 0;
+  padding: 6px 10px;
+  background: #e5e5e5;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-weight: normal;
+}
+
+.modal-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-table td.num {
+  text-align: right;
+}
+
+.modal-table tr[tabindex] {
+  cursor: pointer;
+}
+
+.modal-table tr[tabindex]:hover,
+.modal-table tr[tabindex]:focus-visible {
+  background: var(--yellow);
+  outline: none;
+}
+
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
